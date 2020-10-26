@@ -10,25 +10,49 @@ module AggregateStreams
       end
 
       module Input
+        def self.example(**args)
+          StreamName.example(category: category, **args)
+        end
+
+        def self.category
+          'someInput'
+        end
+
         module Category
           def self.example
-            StreamName.stream_name('someInput')
+            StreamName.stream_name(Input.category)
           end
         end
 
         module Alternate
+          def self.example(**args)
+            StreamName.example(category: category, **args)
+          end
+
+          def self.category
+            'otherInput'
+          end
+
           module Category
             def self.example
-              StreamName.stream_name('otherInput')
+              StreamName.stream_name(Alternate.category)
             end
           end
         end
       end
 
-      module Aggregate
+      module Output
+        def self.example(**args)
+          StreamName.example(category: category, **args)
+        end
+
+        def self.category
+          'someAggregate'
+        end
+
         module Category
           def self.example
-            StreamName.stream_name('someAggregate')
+            StreamName.stream_name(Output.category)
           end
         end
       end
