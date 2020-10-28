@@ -14,10 +14,10 @@ context "Aggregation" do
       causation_message_category = Controls::StreamName::Input.category
       causation_message_global_position = Controls::Position::Global.example
 
-      position = aggregation.positions[causation_message_category]
+      sequence = aggregation.sequence(causation_message_category)
 
-      test "Is the causation message global position" do
-        assert(position == causation_message_global_position)
+      test "Sequence set to the causation message global position" do
+        assert(sequence == causation_message_global_position)
       end
     end
 
@@ -25,10 +25,10 @@ context "Aggregation" do
       causation_message_category = Controls::StreamName::Input::Alternate.category
       causation_message_global_position = Controls::Position::Global.alternate
 
-      position = aggregation.positions[causation_message_category]
+      sequence = aggregation.sequence(causation_message_category)
 
-      test "Is the other causation message global position" do
-        assert(position == causation_message_global_position)
+      test "Sequence set to the other causation message global position" do
+        assert(sequence == causation_message_global_position)
       end
     end
   end

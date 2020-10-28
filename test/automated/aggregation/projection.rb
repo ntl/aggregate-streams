@@ -8,14 +8,14 @@ context "Aggregation" do
 
     AggregateStreams::Projection.(aggregation, message)
 
-    context "Position" do
+    context "Sequence" do
       causation_message_category = Controls::StreamName::Input.category
       causation_message_global_position = Controls::Position::Global.example
 
-      position = aggregation.positions[causation_message_category]
+      sequence = aggregation.sequence(causation_message_category)
 
       test "Updated" do
-        assert(position == causation_message_global_position)
+        assert(sequence == causation_message_global_position)
       end
     end
   end
