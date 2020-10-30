@@ -12,7 +12,7 @@ context "Aggregation" do
 
     context "First Message" do
       causation_message_category = Controls::StreamName::Input.category
-      causation_message_global_position = Controls::Position::Global.example
+      causation_message_global_position = Controls::Position::Global::Causation.example
 
       sequence = aggregation.sequence(causation_message_category)
 
@@ -23,7 +23,7 @@ context "Aggregation" do
 
     context "Second Message" do
       causation_message_category = Controls::StreamName::Input::Alternate.category
-      causation_message_global_position = Controls::Position::Global.alternate
+      causation_message_global_position = Controls::Position::Global::Causation.alternate
 
       sequence = aggregation.sequence(causation_message_category)
 

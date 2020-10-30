@@ -10,7 +10,7 @@ context "Aggregation" do
 
     context "Sequence" do
       causation_message_category = Controls::StreamName::Input.category
-      causation_message_global_position = Controls::Position::Global.example
+      causation_message_global_position = Controls::Position::Global::Causation.example
 
       sequence = aggregation.sequence(causation_message_category)
 

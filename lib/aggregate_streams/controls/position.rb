@@ -13,6 +13,10 @@ module AggregateStreams
         def self.example
           Position.example - 1
         end
+
+        def self.alternate
+          Position.alternate - 1
+        end
       end
 
       module Initial
@@ -32,9 +36,15 @@ module AggregateStreams
 
         module Previous
           def self.example
-            Position.example - 1
+            Global.example - 1
+          end
+
+          def self.alternate
+            Global.alternate - 1
           end
         end
+
+        Causation = Previous
       end
     end
   end
