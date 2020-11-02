@@ -1,6 +1,8 @@
 require 'consumer/postgres'
-require 'entity_projection'
+require 'entity_store'
+require 'entity_snapshot/postgres'
 
 require 'aggregate_streams/aggregation'
 require 'aggregate_streams/projection'
+require 'aggregate_streams/store'
 require 'aggregate_streams/handler'

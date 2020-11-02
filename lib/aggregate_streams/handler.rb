@@ -4,14 +4,30 @@ module AggregateStreams
     include Initializer
 
     dependency :write, MessageStore::Postgres::Write
+    dependency :store, Store
 
     initializer :output_stream
 
     def configure(session: nil)
-      MessageStore::Postgres::Write.configure(self)
+      MessageStore::Postgres::Write.configure(self, session: session)
+
+      category = Messaging::StreamName.get_category(output_stream)
+
+      store_cls = Class.new do
+        include Store
+
+        category category
+      end
+
+      store_cls.configure(self, session: session)
     end
 
     def handle(message_data)
+      stream_id = Messaging::StreamName.get_id(output_stream)
+      aggregation = store.fetch(stream_id)
+
+      return if aggregation.processed?(message_data)
+
       input_metadata = Messaging::Message::Metadata.build(message_data.metadata)
       output_metadata = Messaging::Message::Metadata.build
 

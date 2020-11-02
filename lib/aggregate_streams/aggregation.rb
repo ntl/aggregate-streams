@@ -29,5 +29,19 @@ module AggregateStreams
 
       sequence >= message.global_position
     end
+
+    module Transform
+      def self.raw_data(aggregation)
+        aggregation.to_h
+      end
+
+      def self.instance(raw_data)
+        sequences = Casing::Camel.(raw_data[:sequences], symbol_to_string: true)
+
+        Aggregation.build({
+          :sequences => sequences
+        })
+      end
+    end
   end
 end

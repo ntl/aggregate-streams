@@ -54,6 +54,10 @@ module AggregateStreams
           def self.example
             StreamName.stream_name(Output.category)
           end
+
+          def self.internal
+            :some_aggregate
+          end
         end
       end
     end
