@@ -1,29 +1,25 @@
 module AggregateStreams
-  class Handler
-    include Messaging::Handle
-    include Initializer
+  module Handler
+    def self.included(cls)
+      cls.class_exec do
+        include Messaging::Handle
+        include Messaging::StreamName
 
-    dependency :write, MessageStore::Postgres::Write
-    dependency :store, Store
+        prepend Configure
 
-    initializer :output_stream
+        extend StoreClass
+        extend CategoryMacro
+        extend SnapshotIntervalMacro
 
-    def configure(session: nil)
-      MessageStore::Postgres::Write.configure(self, session: session)
+        const_set :Store, store_class
 
-      category = Messaging::StreamName.get_category(output_stream)
-
-      store_cls = Class.new do
-        include Store
-
-        category category
+        dependency :store, self::Store
+        dependency :write, MessageStore::Postgres::Write
       end
-
-      store_cls.configure(self, session: session)
     end
 
     def handle(message_data)
-      stream_id = Messaging::StreamName.get_id(output_stream)
+      stream_id = Messaging::StreamName.get_id(message_data.stream_name)
       aggregation = store.fetch(stream_id)
 
       return if aggregation.processed?(message_data)
@@ -42,7 +38,40 @@ module AggregateStreams
 
       output_message_data.metadata = output_metadata
 
-      write.(output_message_data, output_stream)
+      stream_name = stream_name(stream_id)
+      write.(output_message_data, stream_name)
+    end
+
+    module Configure
+      def configure(session: nil)
+        self.class::Store.configure(self, session: session)
+        MessageStore::Postgres::Write.configure(self, session: session)
+      end
+    end
+
+    module StoreClass
+      def store_class
+        @store_class ||= Class.new do
+          include Store
+        end
+      end
+      alias_method :store_cls, :store_class
+    end
+
+    module CategoryMacro
+      def category_macro(category)
+        super(category)
+
+        store_class.category_macro(category)
+      end
+      alias_method :category, :category_macro
+    end
+
+    module SnapshotIntervalMacro
+      def snapshot_interval_macro(interval)
+        store_class.snapshot(EntitySnapshot::Postgres, interval: interval)
+      end
+      alias_method :snapshot_interval, :snapshot_interval_macro
     end
   end
 end

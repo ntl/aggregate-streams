@@ -9,3 +9,5 @@ require 'aggregate_streams/controls/category'
 require 'aggregate_streams/controls/aggregation'
 
 require 'aggregate_streams/controls/store'
+
+require 'aggregate_streams/controls/handler'
