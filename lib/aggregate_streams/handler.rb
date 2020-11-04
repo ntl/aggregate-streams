@@ -9,18 +9,24 @@ module AggregateStreams
 
         extend StoreClass
         extend CategoryMacro
+        extend HandleMacro
         extend SnapshotIntervalMacro
 
         const_set :Store, store_class
 
         dependency :store, self::Store
         dependency :write, MessageStore::Postgres::Write
+
+        virtual :handle_action do |write_message_data|
+          write_message_data
+        end
       end
     end
 
     def handle(message_data)
       stream_id = Messaging::StreamName.get_id(message_data.stream_name)
-      aggregation = store.fetch(stream_id)
+
+      aggregation, version = store.fetch(stream_id, include: :version)
 
       return if aggregation.processed?(message_data)
 
@@ -32,14 +38,30 @@ module AggregateStreams
       output_metadata = output_metadata.to_h
       output_metadata.delete_if { |_, v| v.nil? }
 
-      output_message_data = MessageStore::MessageData::Write.new
+      write_message_data = MessageStore::MessageData::Write.new
 
-      SetAttributes.(output_message_data, message_data, copy: [:type, :data])
+      SetAttributes.(write_message_data, message_data, copy: [:type, :data])
 
-      output_message_data.metadata = output_metadata
+      write_message_data.metadata = output_metadata
 
-      stream_name = stream_name(stream_id)
-      write.(output_message_data, stream_name)
+      write_message_data = handle_action(write_message_data)
+
+      if write_message_data.nil?
+        return
+      end
+
+      Try.(MessageStore::ExpectedVersion::Error) do
+        stream_name = stream_name(stream_id)
+        write.(write_message_data, stream_name, expected_version: version)
+      end
+    end
+
+    def transform(write_message_data)
+      write_message = false
+
+      transform_action(write_message_data)
+
+      write_message = true
     end
 
     module Configure
@@ -65,6 +87,13 @@ module AggregateStreams
         store_class.category_macro(category)
       end
       alias_method :category, :category_macro
+    end
+
+    module HandleMacro
+      def handle_macro(&handle_action)
+        define_method(:handle_action, &handle_action)
+      end
+      alias_method :handle, :handle_macro
     end
 
     module SnapshotIntervalMacro

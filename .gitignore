@@ -1,4 +1,5 @@
 .bundle/
+scratch/
 Gemfile.lock
 *.gem
 gems

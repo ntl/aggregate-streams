@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'evt-consumer-postgres'
   s.add_dependency 'evt-entity_store'
   s.add_dependency 'evt-entity_snapshot-postgres'
+  s.add_dependency 'evt-try'
 
   s.add_development_dependency 'test_bench'
   s.add_development_dependency 'evt-component_host'

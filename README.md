@@ -46,6 +46,16 @@ AggregateStreams.start(['productCatalog', 'productInventory', 'productPricing'],
     end
   end
 end
+
+class SomeHandler
+  include AggregateStreams::Handle
+
+  category :product_aggregate
+
+  transform do |write_message_data|
+    next # Skip
+  end
+end
 ```
 
 #### Skip Some Messages
