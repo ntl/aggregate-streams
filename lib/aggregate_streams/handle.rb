@@ -1,5 +1,7 @@
 module AggregateStreams
-  module Handler
+  module Handle
+    TransformError = Class.new(RuntimeError)
+
     def self.included(cls)
       cls.class_exec do
         include Messaging::Handle
@@ -9,7 +11,7 @@ module AggregateStreams
 
         extend StoreClass
         extend CategoryMacro
-        extend HandleMacro
+        extend TransformMacro
         extend SnapshotIntervalMacro
 
         const_set :Store, store_class
@@ -17,7 +19,7 @@ module AggregateStreams
         dependency :store, self::Store
         dependency :write, MessageStore::Postgres::Write
 
-        virtual :handle_action do |write_message_data|
+        virtual :transform do |write_message_data|
           write_message_data
         end
       end
@@ -44,9 +46,11 @@ module AggregateStreams
 
       write_message_data.metadata = output_metadata
 
-      write_message_data = handle_action(write_message_data)
+      write_message_data = transform(write_message_data)
 
-      if write_message_data.nil?
+      if write_message_data
+        assure_message_data(write_message_data)
+      else
         return
       end
 
@@ -56,12 +60,10 @@ module AggregateStreams
       end
     end
 
-    def transform(write_message_data)
-      write_message = false
-
-      transform_action(write_message_data)
-
-      write_message = true
+    def assure_message_data(message_data)
+      unless message_data.instance_of?(MessageStore::MessageData::Write)
+        raise TransformError, "Not an instance of MessageData::Write"
+      end
     end
 
     module Configure
@@ -89,11 +91,11 @@ module AggregateStreams
       alias_method :category, :category_macro
     end
 
-    module HandleMacro
-      def handle_macro(&handle_action)
-        define_method(:handle_action, &handle_action)
+    module TransformMacro
+      def transform_macro(&transform_action)
+        define_method(:transform, &transform_action)
       end
-      alias_method :handle, :handle_macro
+      alias_method :transform, :transform_macro
     end
 
     module SnapshotIntervalMacro

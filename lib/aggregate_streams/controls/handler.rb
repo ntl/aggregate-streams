@@ -25,7 +25,7 @@ module AggregateStreams
         end
 
         Class.new do
-          include AggregateStreams::Handler
+          include AggregateStreams::Handle
 
           unless category.nil?
             category category
