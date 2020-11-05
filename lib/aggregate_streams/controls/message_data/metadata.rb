@@ -131,9 +131,11 @@ module AggregateStreams
         end
 
         module Output
-          def self.example
+          def self.example(causation_message_category: nil)
+            causation_message_category ||= StreamName::Input::Category.example
+
             Metadata.example(
-              causation_message_stream_name: StreamName::Input.example,
+              causation_message_stream_name: StreamName::Input.example(category: causation_message_category),
               causation_message_position: Position::Previous.example,
               causation_message_global_position: Position::Global::Previous.example
             )

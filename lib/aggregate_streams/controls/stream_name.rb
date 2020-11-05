@@ -10,7 +10,9 @@ module AggregateStreams
       end
 
       module Input
-        def self.example(**args)
+        def self.example(category: nil, **args)
+          category ||= self.category
+
           StreamName.example(category: category, **args)
         end
 
@@ -26,7 +28,7 @@ module AggregateStreams
 
         module Alternate
           def self.example(**args)
-            StreamName.example(category: category, **args)
+            Input.example(category: category, **args)
           end
 
           def self.category
