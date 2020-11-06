@@ -24,8 +24,8 @@ module AggregateStreams
 
         virtual :writer_session
 
-        virtual :transform do |write_message_data|
-          write_message_data
+        virtual :transform_action do
+          proc { |message_data| message_data }
         end
       end
     end
@@ -83,6 +83,10 @@ module AggregateStreams
       end
     end
 
+    def transform(write_message_data, stream_name)
+      transform_action.(write_message_data, stream_name)
+    end
+
     def assure_message_data(message_data)
       unless message_data.instance_of?(MessageStore::MessageData::Write)
         raise TransformError, "Not an instance of MessageData::Write"
@@ -120,7 +124,9 @@ module AggregateStreams
 
     module TransformMacro
       def transform_macro(&transform_action)
-        define_method(:transform, &transform_action)
+        define_method(:transform_action) do
+          transform_action
+        end
       end
       alias_method :transform, :transform_macro
     end

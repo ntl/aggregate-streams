@@ -1,5 +1,5 @@
 module AggregateStreams
-  def self.start(input_categories, output_category, **consumer_args, &handler_block)
+  def self.start(input_categories, output_category, writer_session: nil, snapshot_interval: nil, **consumer_args, &transform_action)
     handler_block ||= proc { }
 
     input_categories.each do |input_category|
@@ -8,8 +8,18 @@ module AggregateStreams
 
         category output_category
 
-        unless handler_block.nil?
-          class_exec(&handler_block)
+        unless writer_session.nil?
+          writer_session_macro do
+            writer_session
+          end
+        end
+
+        unless snapshot_interval.nil?
+          snapshot_interval_macro snapshot_interval
+        end
+
+        unless transform_action.nil?
+          transform(&transform_action)
         end
       end
 
