@@ -1,8 +1,7 @@
 module AggregateStreams
   class PositionStore
-    include Dependency
+    include ::Consumer::PositionStore
     include Initializer
-    include Log::Dependency
 
     dependency :session, MessageStore::Postgres::Session
 

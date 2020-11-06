@@ -39,10 +39,15 @@ module AggregateStreams
         return
       end
 
-      input_metadata = Messaging::Message::Metadata.build(message_data.metadata)
+      raw_input_data = Messaging::Message::Transform::MessageData.read(message_data)
+      input_metadata = Messaging::Message::Metadata.build(raw_input_data[:metadata])
+
       output_metadata = Messaging::Message::Metadata.build
 
       output_metadata.follow(input_metadata)
+      if output_metadata.causation_message_stream_name.nil?
+        binding.irb
+      end
 
       output_metadata = output_metadata.to_h
       output_metadata.delete_if { |_, v| v.nil? }

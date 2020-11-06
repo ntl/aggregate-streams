@@ -32,6 +32,18 @@ context "Handler" do
         test "Copied message follows input message" do
           assert(copied_metadata.follows?(input_metadata))
         end
+
+        test "Causation message stream name" do
+          assert(copied_metadata.causation_message_stream_name == message.stream_name)
+        end
+
+        test "Causation message position" do
+          assert(copied_metadata.causation_message_position == message.position)
+        end
+
+        test "Causation message global position" do
+          assert(copied_metadata.causation_message_global_position == message.global_position)
+        end
       end
     end
   end

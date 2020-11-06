@@ -10,4 +10,6 @@ require 'aggregate_streams/handle'
 
 require 'aggregate_streams/position_store'
 
+require 'aggregate_streams/consumer'
+
 require 'aggregate_streams/aggregate_streams'

@@ -1,15 +1,15 @@
 require_relative './interactive_init'
 
+require 'component_host'
+
 module Start
   def self.call
     input_1 = Controls::StreamName::Input::Category.example
-    input_2 = Controls::StreamName::Input::Category.example
+    input_2 = Controls::StreamName::Input::Alternate::Category.example
 
-    AggregateStreams.start(
-      [input_1, input_2],
-      output,
-      identifier: 'interactiveTest'
-    )
+    output = Controls::Category.example
+
+    AggregateStreams.start([input_1, input_2], output)
   end
 end
 
