@@ -16,6 +16,7 @@ module AggregateStreams
         PositionStore.configure(
           self,
           input_category,
+          output_category,
           session: session
         )
       end

@@ -29,9 +29,10 @@ context "Position Store" do
 
       position = position_store.get
 
-      control_position = message_2.metadata[:causation_message_global_position] or fail
+      causation_message_global_position = message_2.metadata[:causation_message_global_position] or fail
+      control_position = causation_message_global_position + 1
 
-      test "Returns the global position of the most recent causation message from input category" do
+      test "Next position after the causation message global position" do
         detail "Position: #{position}"
         comment "Control Position: #{position}"
 

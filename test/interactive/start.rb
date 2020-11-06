@@ -7,7 +7,7 @@ module Start
     input_1 = Controls::StreamName::Input::Category.example
     input_2 = Controls::StreamName::Input::Alternate::Category.example
 
-    output = Controls::Category.example
+    output = Controls::StreamName::Output::Category.example
 
     AggregateStreams.start([input_1, input_2], output)
   end

@@ -1,6 +1,7 @@
 module AggregateStreams
   class PositionStore
     include ::Consumer::PositionStore
+    include ::Log::Dependency
     include Initializer
 
     dependency :session, MessageStore::Postgres::Session
@@ -27,7 +28,7 @@ module AggregateStreams
       else
         record = result[0]
 
-        position = record['position'].to_i
+        position = record['position'].to_i + 1
       end
 
       logger.info { "Get position done (Position: #{position || '(none)'}, Output Category: #{output_category.inspect}, Input Category: #{input_category.inspect})" }
