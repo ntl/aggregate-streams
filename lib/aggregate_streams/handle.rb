@@ -58,7 +58,8 @@ module AggregateStreams
 
       write_message_data.metadata = output_metadata
 
-      write_message_data = transform(write_message_data)
+      input_category = Messaging::StreamName.get_category(message_data.stream_name)
+      write_message_data = transform(write_message_data, input_category)
 
       if write_message_data
         assure_message_data(write_message_data)

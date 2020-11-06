@@ -30,41 +30,43 @@ end
 
 ### Block Argument
 
-`AggregateStreams.start(…)` accepts an optional block argument which can control various aspects of the aggregation. The first argument supplied to the block is an instance of `MessageStore::MessageData::Write`, and can be mutated in order to transform the message data that's being written. The second argument is the category that the message was read from.
+`AggregateStreams.start(…)` accepts an optional block argument which can control various aspects of the aggregation.
 
-#### Rename Message Type
+#### Transformation
+
+The `#transform` method accepts a block argument that can alter messages as they are copied to the aggregate stream. The block must return either the message passed in, or a new message, or nil/false.
+
+##### Rename Message Type
 
 Sometimes multiple input streams may have message types that coincide with one another. To disambiguate, set a different `message_type` property on the message data passed to the block:
 
 ``` ruby
-AggregateStreams.start(['productCatalog', 'productInventory', 'productPricing'], 'productAggregate') do |message_data, input_category|
-  if message_data.type == 'Initiated'
-    if input_category == 'productCatalog'
-      message_data.type = 'CatalogInitiated'
-    elsif input_category == 'productPricing'
-      message_data.type = 'PricingInitiated'
+AggregateStreams.start(['someStream', 'otherStream'], 'someAggregate') do
+  transform do |message_data, input_category|
+    if message_data.type == 'Initiated'
+      if input_category == 'productCatalog'
+        message_data.type = 'CatalogInitiated'
+      elsif input_category == 'productPricing'
+        message_data.type = 'PricingInitiated'
+      end
     end
-  end
-end
 
-class SomeHandler
-  include AggregateStreams::Handle
-
-  category :product_aggregate
-
-  transform do |write_message_data|
-    next # Skip
+    message_data
   end
 end
 ```
 
 #### Skip Some Messages
 
-To avoid copying some messages from the input streams to the output, use `next` within the block:
+To avoid copying some messages from the input streams to the output, have the `#transform` block return nil or false:
 
 ``` ruby
 AggregateStreams.start(['someCategory', 'otherCategory'], 'someAggregation') do |message_data|
-  next if message_data.type == 'SomeUnimportantEvent'
+  transform do |message_data|
+    return nil if message_data.type == 'SomeUnimportantEvent'
+
+    message_data
+  end
 end
 ```
 
