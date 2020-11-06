@@ -28,46 +28,60 @@ ComponentHost.start('aggregate-streams-example') do |host|
 end
 ```
 
-### Block Argument
+### Transformation
 
-`AggregateStreams.start(…)` accepts an optional block argument which can control various aspects of the aggregation.
+`AggregateStreams.start(…)` accepts an optional block argument which can transform the events as they are copied to the aggregate stream.
 
-#### Transformation
-
-The `#transform` method accepts a block argument that can alter messages as they are copied to the aggregate stream. The block must return either the message passed in, or a new message, or nil/false.
-
-##### Rename Message Type
+#### Rename Message Type
 
 Sometimes multiple input streams may have message types that coincide with one another. To disambiguate, set a different `message_type` property on the message data passed to the block:
 
 ``` ruby
-AggregateStreams.start(['someStream', 'otherStream'], 'someAggregate') do
-  transform do |message_data, input_category|
-    if message_data.type == 'Initiated'
-      if input_category == 'productCatalog'
-        message_data.type = 'CatalogInitiated'
-      elsif input_category == 'productPricing'
-        message_data.type = 'PricingInitiated'
-      end
+AggregateStreams.start(['someStream', 'otherStream'], 'someAggregate') do |message_data, input_category|
+  if message_data.type == 'Initiated'
+    if input_category == 'productCatalog'
+      message_data.type = 'CatalogInitiated'
+    elsif input_category == 'productPricing'
+      message_data.type = 'PricingInitiated'
     end
-
-    message_data
   end
+
+  message_data
 end
 ```
 
-#### Skip Some Messages
+##### Skip Some Messages
 
 To avoid copying some messages from the input streams to the output, have the `#transform` block return nil or false:
 
 ``` ruby
 AggregateStreams.start(['someCategory', 'otherCategory'], 'someAggregation') do |message_data|
-  transform do |message_data|
-    return nil if message_data.type == 'SomeUnimportantEvent'
+  return nil if message_data.type == 'SomeUnimportantEvent'
 
-    message_data
-  end
+  message_data
 end
+```
+
+#### Write to a Different Message Store
+
+Sometimes it is desirable to aggregate events into a different message store. Use `#writer_session` to specify a different session:
+
+``` ruby
+settings = MessageStore::Postgres::Session.build
+
+write_session = MessageStore::Postgres::Session.build(settings: settings)
+
+AggregateStreams.start(['someCategory', 'otherCategory'], 'someAggregation', write_session: write_session)
+```
+
+#### Snapshot Interval
+
+Periodically, the aggregation needs to record snapshot data. This interval can be varied via the `snapshot_interval` argument:
+
+``` ruby
+snapshot_interval = 1000
+
+AggregateStreams.start(['someCategory', 'otherCategory'], 'someAggregation', snapshot_interval: snapshot_interval)
 ```
 
 ## License
