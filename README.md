@@ -69,9 +69,9 @@ Sometimes it is desirable to aggregate events into a different message store. Us
 ``` ruby
 settings = MessageStore::Postgres::Session.build
 
-write_session = MessageStore::Postgres::Session.build(settings: settings)
+writer_session = MessageStore::Postgres::Session.build(settings: settings)
 
-AggregateStreams.start(['someCategory', 'otherCategory'], 'someAggregation', write_session: write_session)
+AggregateStreams.start(['someCategory', 'otherCategory'], 'someAggregation', writer_session: writer_session)
 ```
 
 #### Snapshot Interval
