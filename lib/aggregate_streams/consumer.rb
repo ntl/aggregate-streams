@@ -8,7 +8,7 @@ module AggregateStreams
     end
 
     module Configure
-      def configure(output_category:, **args)
+      def configure(output_category:, output_session: nil, **args)
         super(**args)
 
         input_category = self.category

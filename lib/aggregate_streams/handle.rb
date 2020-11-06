@@ -15,11 +15,14 @@ module AggregateStreams
         extend CategoryMacro
         extend TransformMacro
         extend SnapshotIntervalMacro
+        extend WriterSessionMacro
 
         const_set :Store, store_class
 
         dependency :store, self::Store
         dependency :write, MessageStore::Postgres::Write
+
+        virtual :writer_session
 
         virtual :transform do |write_message_data|
           write_message_data
@@ -45,9 +48,6 @@ module AggregateStreams
       output_metadata = Messaging::Message::Metadata.build
 
       output_metadata.follow(input_metadata)
-      if output_metadata.causation_message_stream_name.nil?
-        binding.irb
-      end
 
       output_metadata = output_metadata.to_h
       output_metadata.delete_if { |_, v| v.nil? }
@@ -90,8 +90,12 @@ module AggregateStreams
 
     module Configure
       def configure(session: nil)
-        self.class::Store.configure(self, session: session)
-        MessageStore::Postgres::Write.configure(self, session: session)
+        writer_session = self.writer_session
+        writer_session ||= session
+
+        self.class::Store.configure(self, session: writer_session)
+
+        MessageStore::Postgres::Write.configure(self, session: writer_session)
       end
     end
 
@@ -125,6 +129,13 @@ module AggregateStreams
         store_class.snapshot(EntitySnapshot::Postgres, interval: interval)
       end
       alias_method :snapshot_interval, :snapshot_interval_macro
+    end
+
+    module WriterSessionMacro
+      def writer_session_macro(&block)
+        define_method(:writer_session, &block)
+      end
+      alias_method :writer_session, :writer_session_macro
     end
   end
 end
