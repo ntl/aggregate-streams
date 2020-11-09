@@ -67,7 +67,7 @@ end
 Sometimes it is desirable to aggregate events into a different message store. Use `#writer_session` to specify a different session:
 
 ``` ruby
-settings = MessageStore::Postgres::Session.build
+settings = MessageStore::Postgres::Settings.build
 
 writer_session = MessageStore::Postgres::Session.build(settings: settings)
 
