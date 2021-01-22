@@ -11,6 +11,7 @@ context "Store" do
     MessageStore::Postgres::Write.([message_1, message_2], aggregate_stream)
 
     store = Controls::Store.example(category: category, snapshot_interval: 1)
+    assert(store.cache.persist_interval == 1)
 
     stream_id = Messaging::StreamName.get_id(aggregate_stream)
 

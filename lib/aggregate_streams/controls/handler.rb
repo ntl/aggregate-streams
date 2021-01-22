@@ -1,47 +1,24 @@
 module AggregateStreams
   module Controls
     module Handler
-      def self.example(category: nil, snapshot: nil, snapshot_interval: nil, &specialize)
-        if category.nil? && snapshot.nil? && snapshot_interval.nil? && specialize.nil?
-          cls = Example
-        else
-          cls = example_class(category: category, snapshot: snapshot, snapshot_interval: snapshot_interval, &specialize)
-        end
-
-        cls.build
-      end
-
-      def self.example_class(category: nil, snapshot: nil, snapshot_interval: nil, &specialize)
+      def self.example(category: nil, snapshot: nil, snapshot_interval: nil, session: nil, writer_session: nil, &transform_action)
         if category == :none
           category = nil
         else
           category ||= Category.example
         end
 
-        snapshot ||= false
+        settings_data = {}
 
-        if snapshot
-          snapshot_interval ||= Store.snapshot_interval
-        end
+        settings_data[:category] = category unless category.nil?
+        settings_data[:snapshot_interval] = snapshot_interval unless snapshot_interval.nil?
+        settings_data[:writer_session] = writer_session unless writer_session.nil?
+        settings_data[:transform_action] = transform_action unless transform_action.nil?
 
-        Class.new do
-          include AggregateStreams::Handle
+        settings = Settings.build(settings_data)
 
-          unless category.nil?
-            category category
-          end
-
-          unless snapshot_interval.nil?
-            snapshot_interval snapshot_interval
-          end
-
-          unless specialize.nil?
-            class_exec(&specialize)
-          end
-        end
+        Handle.build(session: session, settings: settings)
       end
-
-      Example = example_class
     end
   end
 end

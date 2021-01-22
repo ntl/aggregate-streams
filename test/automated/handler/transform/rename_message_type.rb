@@ -6,11 +6,9 @@ context "Handler" do
       message = Controls::MessageData::Input.example(type: 'SomeMessage')
       stream_id = Messaging::StreamName.get_id(message.stream_name)
 
-      handler = Controls::Handler.example do |_|
-        transform do |msg|
-          msg.type = 'OtherMessage'
-          msg
-        end
+      handler = Controls::Handler.example do |msg|
+        msg.type = 'OtherMessage'
+        msg
       end
 
       handler.(message)

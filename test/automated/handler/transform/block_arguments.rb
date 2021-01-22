@@ -9,13 +9,11 @@ context "Handler" do
 
       block_args = []
 
-      handler = Controls::Handler.example do |_|
-        transform do |msg, input_category|
-          block_args << msg
-          block_args << input_category
+      handler = Controls::Handler.example do |msg, input_category|
+        block_args << msg
+        block_args << input_category
 
-          msg
-        end
+        msg
       end
 
       handler.(message)

@@ -1,25 +1,20 @@
 module AggregateStreams
-  module Consumer
-    def self.included(cls)
-      cls.class_exec do
-        include ::Consumer::Postgres
-        include Configure
-      end
-    end
+  class Consumer
+    include ::Consumer::Postgres
 
-    module Configure
-      def configure(output_category:, output_session: nil, **args)
-        super(**args)
+    handler Handle
 
-        input_category = self.category
+    def configure(output_category:, output_session: nil, **args)
+      super(**args)
 
-        PositionStore.configure(
-          self,
-          input_category,
-          output_category,
-          session: session
-        )
-      end
+      input_category = self.category
+
+      PositionStore.configure(
+        self,
+        input_category,
+        output_category,
+        session: output_session
+      )
     end
   end
 end

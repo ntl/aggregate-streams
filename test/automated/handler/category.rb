@@ -1,8 +1,8 @@
 require_relative '../automated_init'
 
 context "Handler" do
-  context "Category Declaration" do
-    context "Category is Declared" do
+  context "Category" do
+    context "Given" do
       category = Controls::Category.example
 
       handler = Controls::Handler.example(category: category)
@@ -16,7 +16,7 @@ context "Handler" do
       end
     end
 
-    context "Category is Not Declared" do
+    context "Omitted" do
       context "Build" do
         test "Is an error" do
           assert_raises(EntityStore::Error) do

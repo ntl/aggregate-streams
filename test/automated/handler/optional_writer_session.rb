@@ -1,41 +1,33 @@
 require_relative '../automated_init'
 
 context "Handler" do
-  context "Writer Session" do
+  context "Optional Writer Session" do
     consumer_session = MessageStore::Postgres::Session.new
 
-    context "Declared" do
-      session = MessageStore::Postgres::Session.new
+    context "Given" do
+      writer_session = MessageStore::Postgres::Session.new
 
-      handler_class = Controls::Handler.example_class do
-        writer_session do
-          session
-        end
-      end
-
-      handler = handler_class.build(session: consumer_session)
+      handler = Controls::Handler.example(session: consumer_session, writer_session: writer_session)
 
       context "Writer Dependency" do
         writer = handler.write
 
-        test "Writer session is assigned, not the consumer session" do
-          assert(writer.put.session.equal?(session))
+        test "Writer session is assigned" do
+          assert(writer.put.session.equal?(writer_session))
         end
       end
 
       context "Store Dependency" do
         store = handler.store
 
-        test "Writer session is assigned, not the consumer session" do
-          assert(store.session.equal?(session))
+        test "Writer session is assigned" do
+          assert(store.session.equal?(writer_session))
         end
       end
     end
 
-    context "Not Declared" do
-      handler_class = Controls::Handler.example_class
-
-      handler = handler_class.build(session: consumer_session)
+    context "Omitted" do
+      handler = Controls::Handler.example(session: consumer_session)
 
       context "Writer Dependency" do
         writer = handler.write

@@ -8,10 +8,8 @@ context "Handler" do
 
       context "Correct" do
         context "Block Provides a Message" do
-          handler = Controls::Handler.example do |_|
-            transform do |msg|
-              msg
-            end
+          handler = Controls::Handler.example do |msg|
+            msg
           end
 
           test "Is not an error" do
@@ -22,10 +20,8 @@ context "Handler" do
         end
 
         context "Block Provides Nothing" do
-          handler = Controls::Handler.example do |_|
-            transform do |msg|
-              nil
-            end
+          handler = Controls::Handler.example do |msg|
+            nil
           end
 
           test "Is not an error" do
@@ -36,10 +32,8 @@ context "Handler" do
         end
 
         context "Block Provides False" do
-          handler = Controls::Handler.example do |_|
-            transform do |msg|
-              false
-            end
+          handler = Controls::Handler.example do |msg|
+            false
           end
 
           test "Is not an error" do
@@ -51,10 +45,8 @@ context "Handler" do
       end
 
       context "Incorrect" do
-        handler = Controls::Handler.example do |_|
-          transform do |msg|
-            'some-string'
-          end
+        handler = Controls::Handler.example do |msg|
+          'some-string'
         end
 
         test "Is an error" do

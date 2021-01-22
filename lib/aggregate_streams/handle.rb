@@ -1,33 +1,27 @@
 module AggregateStreams
-  module Handle
+  class Handle
+    include Messaging::Handle
+    include Messaging::StreamName
+
+    include Log::Dependency
+
     TransformError = Class.new(RuntimeError)
 
-    def self.included(cls)
-      cls.class_exec do
-        include Messaging::Handle
-        include Messaging::StreamName
+    setting :category
+    setting :snapshot_interval
+    setting :writer_session
+    setting :transform_action
 
-        include Log::Dependency
+    dependency :store, Store
+    dependency :write, MessageStore::Postgres::Write
 
-        prepend Configure
+    def configure(session: nil)
+      writer_session = self.writer_session
+      writer_session ||= session
 
-        extend StoreClass
-        extend CategoryMacro
-        extend TransformMacro
-        extend SnapshotIntervalMacro
-        extend WriterSessionMacro
+      Store.configure(self, category: category, session: writer_session, snapshot_interval: snapshot_interval)
 
-        const_set :Store, store_class
-
-        dependency :store, self::Store
-        dependency :write, MessageStore::Postgres::Write
-
-        virtual :writer_session
-
-        virtual :transform_action do
-          proc { |message_data| message_data }
-        end
-      end
+      MessageStore::Postgres::Write.configure(self, session: writer_session)
     end
 
     def handle(message_data)
@@ -84,65 +78,17 @@ module AggregateStreams
     end
 
     def transform(write_message_data, stream_name)
-      transform_action.(write_message_data, stream_name)
+      if transform_action.nil?
+        write_message_data
+      else
+        transform_action.(write_message_data, stream_name)
+      end
     end
 
     def assure_message_data(message_data)
       unless message_data.instance_of?(MessageStore::MessageData::Write)
         raise TransformError, "Not an instance of MessageData::Write"
       end
-    end
-
-    module Configure
-      def configure(session: nil)
-        writer_session = self.writer_session
-        writer_session ||= session
-
-        self.class::Store.configure(self, session: writer_session)
-
-        MessageStore::Postgres::Write.configure(self, session: writer_session)
-      end
-    end
-
-    module StoreClass
-      def store_class
-        @store_class ||= Class.new do
-          include Store
-        end
-      end
-      alias_method :store_cls, :store_class
-    end
-
-    module CategoryMacro
-      def category_macro(category)
-        super(category)
-
-        store_class.category_macro(category)
-      end
-      alias_method :category, :category_macro
-    end
-
-    module TransformMacro
-      def transform_macro(&transform_action)
-        define_method(:transform_action) do
-          transform_action
-        end
-      end
-      alias_method :transform, :transform_macro
-    end
-
-    module SnapshotIntervalMacro
-      def snapshot_interval_macro(interval)
-        store_class.snapshot(EntitySnapshot::Postgres, interval: interval)
-      end
-      alias_method :snapshot_interval, :snapshot_interval_macro
-    end
-
-    module WriterSessionMacro
-      def writer_session_macro(&block)
-        define_method(:writer_session, &block)
-      end
-      alias_method :writer_session, :writer_session_macro
     end
   end
 end
