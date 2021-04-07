@@ -39,12 +39,7 @@ module AggregateStreams
       raw_input_data = Messaging::Message::Transform::MessageData.read(message_data)
       input_metadata = Messaging::Message::Metadata.build(raw_input_data[:metadata])
 
-      output_metadata = Messaging::Message::Metadata.build
-
-      output_metadata.follow(input_metadata)
-
-      output_metadata = output_metadata.to_h
-      output_metadata.delete_if { |_, v| v.nil? }
+      output_metadata = raw_metadata(input_metadata)
 
       write_message_data = MessageStore::MessageData::Write.new
 
@@ -75,6 +70,24 @@ module AggregateStreams
         stream_name = stream_name(stream_id)
         write.(write_message_data, stream_name, expected_version: version)
       end
+    end
+
+    def raw_metadata(metadata)
+      output_metadata = Messaging::Message::Metadata.build
+
+      output_metadata.follow(metadata)
+
+      output_metadata = output_metadata.to_h
+
+      output_metadata.delete(:local_properties)
+
+      if output_metadata[:properties].empty?
+        output_metadata.delete(:properties)
+      end
+
+      output_metadata.delete_if { |_, v| v.nil? }
+
+      output_metadata
     end
 
     def transform(write_message_data, stream_name)

@@ -2,7 +2,7 @@ module AggregateStreams
   module Controls
     module MessageData
       module Metadata
-        def self.example(category: nil, stream_id: nil, stream_name: nil, position: nil, global_position: nil, causation_message_stream_name: nil, causation_message_position: nil, causation_message_global_position: nil, correlation_stream_name: nil, reply_stream_name: nil, schema_version: nil)
+        def self.example(category: nil, stream_id: nil, stream_name: nil, position: nil, global_position: nil, causation_message_stream_name: nil, causation_message_position: nil, causation_message_global_position: nil, correlation_stream_name: nil, reply_stream_name: nil, properties: nil, local_properties: nil, schema_version: nil)
           if stream_name == :none
             stream_name = nil
           else
@@ -51,6 +51,18 @@ module AggregateStreams
             reply_stream_name ||= Metadata.reply_stream_name
           end
 
+          if properties == :none
+            properties = nil
+          else
+            properties ||= self.properties
+          end
+
+          if local_properties == :none
+            local_properties = nil
+          else
+            local_properties ||= self.local_properties
+          end
+
           if schema_version == :none
             schema_version = nil
           else
@@ -68,6 +80,10 @@ module AggregateStreams
 
             :correlation_stream_name => correlation_stream_name,
             :reply_stream_name => reply_stream_name,
+
+            :properties => properties,
+            :local_properties => local_properties,
+
             :schema_version => schema_version
           }
 
@@ -106,6 +122,14 @@ module AggregateStreams
 
         def self.reply_stream_name
           Messaging::Controls::Metadata.reply_stream_name
+        end
+
+        def self.properties
+          Messaging::Controls::Properties.example
+        end
+
+        def self.local_properties
+          Messaging::Controls::LocalProperties.example
         end
 
         def self.schema_version
