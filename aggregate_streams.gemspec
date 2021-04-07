@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.name = 'aggregate_streams'
   s.summary = "Combine messages from multiple Eventide streams into an aggregate stream"
-  s.version = '1.0.0.0.rc1'
+  s.version = '1.0.0.0.rc2'
   s.description = ' '
 
   s.authors = ['Nathan Ladd']
