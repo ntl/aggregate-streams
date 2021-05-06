@@ -5,6 +5,8 @@ module AggregateStreams
 
     include Log::Dependency
 
+    include Settings::Setting
+
     TransformError = Class.new(RuntimeError)
 
     setting :category
@@ -15,7 +17,9 @@ module AggregateStreams
     dependency :store, Store
     dependency :write, MessageStore::Postgres::Write
 
-    def configure(session: nil)
+    def configure(session: nil, settings:)
+      settings.set(self)
+
       writer_session = self.writer_session
       writer_session ||= session
 
