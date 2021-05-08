@@ -61,6 +61,11 @@ module AggregateStreams
         return
       end
 
+      Try.(MessageStore::ExpectedVersion::Error) do
+        stream_name = stream_name(stream_id)
+        write.(write_message_data, stream_name, expected_version: version)
+      end
+
       logger.info do
         message_type = message_data.type
         unless write_message_data.type == message_type
@@ -68,11 +73,6 @@ module AggregateStreams
         end
 
         "Message copied (Message Type: #{message_type}, Stream: #{message_data.stream_name}, Global Position: #{message_data.global_position})"
-      end
-
-      Try.(MessageStore::ExpectedVersion::Error) do
-        stream_name = stream_name(stream_id)
-        write.(write_message_data, stream_name, expected_version: version)
       end
     end
 
