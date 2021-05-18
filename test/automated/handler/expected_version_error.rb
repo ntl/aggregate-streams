@@ -1,7 +1,7 @@
 require_relative '../automated_init'
 
 context "Handler" do
-  context "Message Copied" do
+  context "Expected Version Error" do
     message = Controls::MessageData::Input.example
     stream_id = Messaging::StreamName.get_id(message.stream_name)
 
@@ -13,12 +13,18 @@ context "Handler" do
 
     Dependency::Substitute.(:store, handler)
 
-    handler.(message)
+    test "Not rescued" do
+      assert_raises(MessageStore::ExpectedVersion::Error) do
+        handler.(message)
+      end
+    end
 
-    copied_message = MessageStore::Postgres::Get::Stream::Last.(aggregate_stream)
+    context "Message Copy" do
+      copied_message = MessageStore::Postgres::Get::Stream::Last.(aggregate_stream)
 
-    test "Does not copy message to aggregate stream" do
-      refute(copied_message.data == message.data)
+      test "Not copied" do
+        refute(copied_message.data == message.data)
+      end
     end
   end
 end
